@@ -37,7 +37,7 @@ jobs:
       uses: docker/metadata-action@v6
       with:
         images: |
-          frauhottelmann/wyoming-vosk-standalone
+          ghcr.io/frauhottelmann/wyoming-vosk-standalone
         tags: |
           type=schedule
           type=ref,event=branch
