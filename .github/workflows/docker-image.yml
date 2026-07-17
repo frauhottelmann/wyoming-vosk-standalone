@@ -1,5 +1,11 @@
 name: Docker Image CI
 
+permissions:
+  id-token: write
+  contents: read
+  attestations: write
+  packages: write
+
 on:
   push:
     tags:
@@ -51,6 +57,6 @@ jobs:
     - name: Generate artifact attestation
       uses: actions/attest@v4
       with:
-        subject-name: index.docker.io/my-docker-hub-namespace/my-docker-hub-repository
+        subject-name: ghcr.io/frauhottelmann/wyoming-vosk-standalone
         subject-digest: ${{ steps.push.outputs.digest }}
         push-to-registry: true
