@@ -5,7 +5,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Install wyoming-vosk
 WORKDIR /usr/src
-ARG WYOMING_VOSK_VERSION=1.5.0
+ARG WYOMING_VOSK_VERSION="1.5.0"
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
 
 RUN \
@@ -17,7 +17,6 @@ RUN \
         libatomic1 \
     && pip3 install --no-cache-dir -U \
         setuptools \
-        wheel \
     && pip3 install --no-cache-dir \
         --extra-index-url https://www.piwheels.org/simple \
         -f . \
