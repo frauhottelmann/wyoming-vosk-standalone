@@ -6,7 +6,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Install wyoming-vosk
 WORKDIR /usr/src
-ARG WYOMING_VOSK_VERSION
+ARG WYOMING_VOSK_VERSION=1.5.0
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
 
 RUN \
