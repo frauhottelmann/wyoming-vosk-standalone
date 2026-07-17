@@ -1,5 +1,4 @@
-ARG BUILD_FROM=ghcr.io/home-assistant/amd64-base-debian:trixie
-FROM ${BUILD_FROM}
+FROM ghcr.io/home-assistant/amd64-base-debian:trixie
 
 # Set shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
