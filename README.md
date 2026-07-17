@@ -6,9 +6,15 @@ A standalone container for vosk using the wyoming protocol. Inspired by [this ha
 * docker compose (or another way of starting the container)
 
 # Usage
+* download docker compose file
+````
+wget https://github.com/frauhottelmann/wyoming-vosk-standalone/blob/master/docker-compose.yaml
+````
 * optional: adapt `docker-compose.yaml` to your use-case
-* run the container: `docker compose up`
-
+* run the container:
+````
+docker compose up -d
+````
 A directory called `vosk` will be created in the current folder. Inside that folder are the volumes specified in `docker-compose.yaml`
 
 # Using it in Home Assistant
@@ -16,11 +22,23 @@ A directory called `vosk` will be created in the current folder. Inside that fol
 
 # Using a specific model
 Other Vosk-Models can be found [here](https://alphacephei.com/vosk/models). Let's say you want to use `vosk-model-de-0.21`, a german model (de)
-* `cd` into the models directory: `cd dirs/models`
-* Download the model: `wget https://alphacephei.com/vosk/models/vosk-model-de-0.21.zip`
-* Unzip: `unzip vosk-model-de-0.21.zip`
-* vosk uses the foldername to determine the language: `mv vosk-model-de-0.21 de`
-* optional: delete the zip: `rm unzip vosk-model-de-0.21.zip`
-
+* change into the models directory:
+````
+cd vosk/models
+````
+* Download the model:
+````
+wget https://alphacephei.com/vosk/models/vosk-model-de-0.21.zip
+````
+* Unzip
+````unzip vosk-model-de-0.21.zip````
+* vosk uses the foldername to determine the language:
+````
+mv vosk-model-de-0.21 de
+````
+* optional: delete the zip:
+````
+rm unzip vosk-model-de-0.21.zip
+````
 # Note
 Pull requests and ideas/feature requests are always welcome!
