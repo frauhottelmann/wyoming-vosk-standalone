@@ -1,7 +1,7 @@
-version: "2"
 services:
   vosk:
-    image: wyoming-vosk-standalone:1.5.0
+    image: ghcr.io/frauhottelmann/wyoming-vosk-standalone:1.5.0
+    container_name: vosk
     environment:
       - CORRECT_SENTENCES=0.0
       - PRELOAD_LANGUAGE=en
@@ -9,11 +9,9 @@ services:
       - LIMIT_SENTENCES=TRUE
       - ALLOW_UNKNOWN=False
     volumes:
-      - ./dirs/data:/data
-      - ./dirs/sentences:/share/vosk/sentences
-      - ./dirs/models:/share/vosk/models
+      - ./vosk/data:/data
+      - ./vosk/sentences:/share/vosk/sentences
+      - ./vosk/models:/share/vosk/models
     ports:
       - 10300:10300
     restart: unless-stopped
-        
-
