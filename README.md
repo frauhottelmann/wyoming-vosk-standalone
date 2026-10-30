@@ -34,6 +34,7 @@ A directory called `vosk` will be created in the current folder. Inside that fol
 | `LIMIT_SENTENCES` | `false` | Only sentences from `sentences/<lang>.yaml` can be recognized |
 | `ALLOW_UNKNOWN` | `false` | Return an empty transcript when unknown words are spoken |
 | `DEBUG_LOGGING` | `false` | Log debug messages |
+| `MODEL_URL` | | URL of a Vosk model zip for `PRELOAD_LANGUAGE`. Downloaded and unpacked into `models/<language>` on first start (see below) |
 | `PUID` / `PGID` | `1000` | User and group the server runs as. `data` and `sentences` are handed over to this user at startup |
 
 Boolean variables accept `true`/`false`, `1`/`0`, `yes`/`no` and `on`/`off` (case-insensitive).
@@ -41,13 +42,23 @@ Boolean variables accept `true`/`false`, `1`/`0`, `yes`/`no` and `on`/`off` (cas
 The container drops root privileges at startup. Alternatively you can start it directly as an unprivileged user with `user: "1000:1000"` in `docker-compose.yaml`; then the mounted `data` and `sentences` folders must be writable for that user.
 
 ## Healthcheck
-The image has a built-in healthcheck that checks whether port `10300` accepts connections. `docker ps` shows the container as `healthy` once the model is loaded.
+The image has a built-in healthcheck that sends a Wyoming `describe` request to port `10300` and expects an `info` answer. `docker ps` shows the container as `healthy` once the model is loaded.
 
 # Using it in Home Assistant
 * Settings->Integrations->Add Integration: Add the wyoming protocol and add the IP of wherever you are running `Wyoming Vosk Standalone`. The port is `10300`.
 
 # Using a specific model
-Other Vosk-Models can be found [here](https://alphacephei.com/vosk/models). Let's say you want to use `vosk-model-de-0.21`, a german model (de)
+Other Vosk-Models can be found [here](https://alphacephei.com/vosk/models). Let's say you want to use `vosk-model-de-0.21`, a german model (de).
+
+## Automatically
+Set the language and the model URL in `docker-compose.yaml`:
+````
+      - PRELOAD_LANGUAGE=de
+      - MODEL_URL=https://alphacephei.com/vosk/models/vosk-model-de-0.21.zip
+````
+On the first start the model is downloaded and unpacked into `vosk/models/de`. If that folder already exists, nothing is downloaded. To switch to another model, delete the folder and restart the container. Large models can take a while to download; until the server is up, `docker ps` shows the container as `unhealthy`.
+
+## Manually
 * change into the models directory:
 ````
 cd vosk/models

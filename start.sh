@@ -14,6 +14,11 @@ is_true() {
 if [ "$(id -u)" = "0" ]; then
     PUID="${PUID:-1000}"
     PGID="${PGID:-1000}"
+    if [ -n "${MODEL_URL:-}" ]; then
+        # Only the top-level models directory, existing models stay untouched
+        chown "${PUID}:${PGID}" /share/vosk/models \
+            || echo "WARNING: could not change ownership of /share/vosk/models" >&2
+    fi
     find /data /share/vosk/sentences \
         \( ! -user "${PUID}" -o ! -group "${PGID}" \) \
         -exec chown "${PUID}:${PGID}" {} + \
@@ -48,6 +53,11 @@ echo "PRELOAD_LANGUAGE     = ${PRELOAD_LANGUAGE}"
 echo "DEBUG_LOGGING        = ${DEBUG_LOGGING}"
 echo "LIMIT_SENTENCES      = ${LIMIT_SENTENCES}"
 echo "ALLOW_UNKNOWN        = ${ALLOW_UNKNOWN}"
+echo "MODEL_URL            = ${MODEL_URL:-}"
+
+if [ -n "${MODEL_URL:-}" ]; then
+    python3 /download_model.py "${MODEL_URL}" "/share/vosk/models/${PRELOAD_LANGUAGE}"
+fi
 
 if [ -d '/share/vosk/models' ]; then
     # Each directory is a language name with a model inside
