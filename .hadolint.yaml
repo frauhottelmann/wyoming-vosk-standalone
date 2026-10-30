@@ -1,0 +1,5 @@
+ignored:
+  # Debian package versions change with every point release
+  - DL3008
+  # pip cache is a BuildKit cache mount, so it does not end up in the image
+  - DL3042
