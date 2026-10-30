@@ -77,18 +77,30 @@ jobs:
 
     - name: Smoke test
       run: |
+        wait_healthy() {
+          for _ in $(seq 1 60); do
+            status="$(docker inspect --format '{{.State.Health.Status}}' "$1")"
+            echo "$1 health: ${status}"
+            if [ "${status}" = "healthy" ]; then
+              docker logs "$1"
+              return 0
+            fi
+            sleep 5
+          done
+          docker logs "$1"
+          return 1
+        }
+
+        # Default model, downloaded by wyoming-vosk
         docker run -d --name smoke wyoming-vosk-standalone:test
-        for _ in $(seq 1 60); do
-          status="$(docker inspect --format '{{.State.Health.Status}}' smoke)"
-          echo "health: ${status}"
-          if [ "${status}" = "healthy" ]; then
-            docker logs smoke
-            exit 0
-          fi
-          sleep 5
-        done
-        docker logs smoke
-        exit 1
+        # Model downloaded via MODEL_URL
+        docker run -d --name smoke-model-url \
+          -e PRELOAD_LANGUAGE=de \
+          -e MODEL_URL=https://alphacephei.com/vosk/models/vosk-model-small-de-0.15.zip \
+          wyoming-vosk-standalone:test
+
+        wait_healthy smoke
+        wait_healthy smoke-model-url
 
     - name: Scan image for vulnerabilities
       uses: aquasecurity/trivy-action@v0.36.0

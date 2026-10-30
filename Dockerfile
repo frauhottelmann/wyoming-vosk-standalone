@@ -34,7 +34,7 @@ RUN groupadd --gid 1000 vosk \
     && chown -R vosk:vosk /data /share/vosk
 
 COPY --from=build /opt/venv /opt/venv
-COPY --chmod=755 start.sh /start.sh
+COPY --chmod=755 start.sh download_model.py healthcheck.py /
 
 ENV PATH="/opt/venv/bin:${PATH}" \
     PYTHONUNBUFFERED=1 \
@@ -47,6 +47,6 @@ EXPOSE 10300
 STOPSIGNAL SIGINT
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
-    CMD ["python3", "-c", "import socket; socket.create_connection(('127.0.0.1', 10300), timeout=3).close()"]
+    CMD ["python3", "/healthcheck.py"]
 
 ENTRYPOINT ["/start.sh"]

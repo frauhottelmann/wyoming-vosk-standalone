@@ -1,2 +1,4 @@
 *
 !start.sh
+!download_model.py
+!healthcheck.py
