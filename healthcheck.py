@@ -11,6 +11,9 @@ try:
         sock.sendall(b'{"type": "describe"}\n')
         with sock.makefile("rb") as reader:
             header = json.loads(reader.readline())
+            # Read the rest of the event; closing with unread data in the
+            # socket sends a reset, which the server logs as an error
+            reader.read(header.get("data_length", 0) + header.get("payload_length", 0))
 except (OSError, ValueError) as err:
     print(f"unhealthy: {err}")
     sys.exit(1)
