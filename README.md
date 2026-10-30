@@ -75,5 +75,8 @@ docker build -t wyoming-vosk-standalone .
 ````
 The wyoming-vosk version can be changed with `--build-arg WYOMING_VOSK_VERSION=<version>`.
 
+# License
+MIT, like [wyoming-vosk](https://github.com/rhasspy/wyoming-vosk). See [LICENSE](LICENSE).
+
 # Note
 Pull requests and ideas/feature requests are always welcome!

@@ -49,6 +49,16 @@ jobs:
       id: version
       run: echo "version=$(sed -n 's/^ARG WYOMING_VOSK_VERSION=//p' Dockerfile)" >> "$GITHUB_OUTPUT"
 
+    - name: Check that the git tag matches the Dockerfile version
+      if: github.ref_type == 'tag'
+      run: |
+        tag="${GITHUB_REF_NAME#v}"
+        version="${{ steps.version.outputs.version }}"
+        if [ "${tag}" != "${version}" ] && [ "${tag#"${version}"-}" = "${tag}" ]; then
+          echo "::error::Git tag ${GITHUB_REF_NAME} does not match WYOMING_VOSK_VERSION=${version} in the Dockerfile"
+          exit 1
+        fi
+
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v4
 
@@ -79,6 +89,14 @@ jobs:
         done
         docker logs smoke
         exit 1
+
+    - name: Scan image for vulnerabilities
+      uses: aquasecurity/trivy-action@v0.36.0
+      with:
+        image-ref: wyoming-vosk-standalone:test
+        severity: CRITICAL,HIGH
+        ignore-unfixed: true
+        exit-code: '1'
 
     - name: Login to GitHub Container Registry
       if: github.event_name != 'pull_request'
