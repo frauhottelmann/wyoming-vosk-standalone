@@ -1,67 +1,121 @@
 name: Docker Image CI
 
-permissions:
-  id-token: write
-  contents: read
-  attestations: write
-  packages: write
-
 on:
   push:
     tags:
       - '*'
+  pull_request:
   workflow_dispatch:
-  
+
+permissions:
+  contents: read
+
+env:
+  IMAGE: ghcr.io/frauhottelmann/wyoming-vosk-standalone
+
 jobs:
 
-  build:
-
+  lint:
     runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v7
+
+    - name: Lint Dockerfile
+      uses: hadolint/hadolint-action@v3.1.0
+      with:
+        dockerfile: Dockerfile
+
+    - name: Lint start.sh
+      run: shellcheck start.sh
+
+  build:
+    needs: lint
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+      attestations: write
+      packages: write
 
     steps:
     - name: Checkout
       uses: actions/checkout@v7
 
+    - name: Read wyoming-vosk version from Dockerfile
+      id: version
+      run: echo "version=$(sed -n 's/^ARG WYOMING_VOSK_VERSION=//p' Dockerfile)" >> "$GITHUB_OUTPUT"
+
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v4
 
     - name: Set up Docker Buildx
-      id: buildx
       uses: docker/setup-buildx-action@v4
 
-    - name: Login to Github Packages
+    - name: Build image for smoke test
+      uses: docker/build-push-action@v7
+      with:
+        context: .
+        platforms: linux/amd64
+        load: true
+        tags: wyoming-vosk-standalone:test
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Smoke test
+      run: |
+        docker run -d --name smoke wyoming-vosk-standalone:test
+        for _ in $(seq 1 60); do
+          status="$(docker inspect --format '{{.State.Health.Status}}' smoke)"
+          echo "health: ${status}"
+          if [ "${status}" = "healthy" ]; then
+            docker logs smoke
+            exit 0
+          fi
+          sleep 5
+        done
+        docker logs smoke
+        exit 1
+
+    - name: Login to GitHub Container Registry
+      if: github.event_name != 'pull_request'
       uses: docker/login-action@v4
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
-        password: ${{ secrets.TOKEN }}
+        password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Docker meta
       id: meta
       uses: docker/metadata-action@v6
       with:
-        images: |
-          ghcr.io/frauhottelmann/wyoming-vosk-standalone
+        images: ${{ env.IMAGE }}
         tags: |
-          type=schedule
-          type=ref,event=branch
+          type=ref,event=pr
           type=semver,pattern={{version}}
           type=semver,pattern={{major}}.{{minor}}
           type=semver,pattern={{major}}
+          type=raw,value=${{ steps.version.outputs.version }},enable=${{ github.event_name == 'workflow_dispatch' }}
+          type=raw,value=latest,enable=${{ github.event_name == 'workflow_dispatch' }}
 
-    - name: Build image and push to Docker Hub and GitHub Container Registry
+    - name: Build multi-arch image and push to GitHub Container Registry
       id: push
       uses: docker/build-push-action@v7
       with:
         context: .
-        platforms: linux/amd64, linux/arm64
+        platforms: linux/amd64,linux/arm64
         push: ${{ github.event_name != 'pull_request' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
+        annotations: ${{ steps.meta.outputs.annotations }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
 
     - name: Generate artifact attestation
+      if: github.event_name != 'pull_request'
       uses: actions/attest@v4
       with:
-        subject-name: ghcr.io/frauhottelmann/wyoming-vosk-standalone
+        subject-name: ${{ env.IMAGE }}
         subject-digest: ${{ steps.push.outputs.digest }}
         push-to-registry: true
