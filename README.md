@@ -22,7 +22,9 @@ A directory called `vosk` will be created in the current folder. Inside that fol
 ## Image tags
 * `1.5.0`: exact wyoming-vosk version
 * `1.5` / `1`: latest image of that minor/major version
-* `latest`: most recent build
+* `latest`: most recent release
+* `edge`: latest commit on `master` (may be unstable)
+* `sha-<commit>`: a specific commit on `master`
 
 ## Environment variables
 | Variable | Default | Description |
