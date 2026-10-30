@@ -1,12 +1,12 @@
 # syntax=docker/dockerfile:1
 
-ARG PYTHON_VERSION=3.12
 ARG WYOMING_VOSK_VERSION=1.5.0
 
 # -----------------------------------------------------------------------------
 # Build stage: install wyoming-vosk into a virtualenv
 # -----------------------------------------------------------------------------
-FROM python:${PYTHON_VERSION}-slim-trixie AS build
+# Pinned by digest; Dependabot keeps tag and digest up to date
+FROM python:3.12-slim-trixie@sha256:aa943ce411423c7582288f18707ff66eddcbaeb510502d747a72aeb34f30d159 AS build
 
 ARG WYOMING_VOSK_VERSION
 
@@ -20,7 +20,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 # -----------------------------------------------------------------------------
 # Runtime stage
 # -----------------------------------------------------------------------------
-FROM python:${PYTHON_VERSION}-slim-trixie
+FROM python:3.12-slim-trixie@sha256:aa943ce411423c7582288f18707ff66eddcbaeb510502d747a72aeb34f30d159
 
 ARG WYOMING_VOSK_VERSION
 

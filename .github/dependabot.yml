@@ -9,3 +9,10 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    ignore:
+      # rapidfuzz==3.3.1 (pinned by wyoming-vosk) has no wheels for newer
+      # Python versions, so only take patch and digest updates
+      - dependency-name: python
+        update-types:
+          - version-update:semver-major
+          - version-update:semver-minor
