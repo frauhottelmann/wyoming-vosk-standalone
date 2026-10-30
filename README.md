@@ -1,5 +1,7 @@
 # Wyoming Vosk Standalone
-A standalone container for vosk using the wyoming protocol. Inspired by [this hass.io addon](https://github.com/rhasspy/hassio-addons/tree/master/vosk).
+A standalone container for [vosk](https://alphacephei.com/vosk/) using the [wyoming protocol](https://github.com/rhasspy/wyoming). Inspired by [this hass.io addon](https://github.com/rhasspy/hassio-addons/tree/master/vosk).
+
+Images are available for `linux/amd64` and `linux/arm64` (e.g. Raspberry Pi 4/5 with a 64-bit OS).
 
 # Prerequisites
 * docker
@@ -8,7 +10,7 @@ A standalone container for vosk using the wyoming protocol. Inspired by [this ha
 # Usage
 * download docker compose file
 ````
-wget https://github.com/frauhottelmann/wyoming-vosk-standalone/blob/master/docker-compose.yaml
+wget https://raw.githubusercontent.com/frauhottelmann/wyoming-vosk-standalone/master/docker-compose.yaml
 ````
 * optional: adapt `docker-compose.yaml` to your use-case
 * run the container:
@@ -16,6 +18,28 @@ wget https://github.com/frauhottelmann/wyoming-vosk-standalone/blob/master/docke
 docker compose up -d
 ````
 A directory called `vosk` will be created in the current folder. Inside that folder are the volumes specified in `docker-compose.yaml`
+
+## Image tags
+* `1.5.0`: exact wyoming-vosk version
+* `1.5` / `1`: latest image of that minor/major version
+* `latest`: most recent build
+
+## Environment variables
+| Variable | Default | Description |
+| --- | --- | --- |
+| `PRELOAD_LANGUAGE` | `en` | Default language; its model is loaded at startup (and downloaded into `/data` if missing) |
+| `CORRECT_SENTENCES` | `0.0` | Score cutoff for correcting transcripts towards the sentences in `sentences/` (0 = strict, higher = less strict) |
+| `LIMIT_SENTENCES` | `false` | Only sentences from `sentences/<lang>.yaml` can be recognized |
+| `ALLOW_UNKNOWN` | `false` | Return an empty transcript when unknown words are spoken |
+| `DEBUG_LOGGING` | `false` | Log debug messages |
+| `PUID` / `PGID` | `1000` | User and group the server runs as. `data` and `sentences` are handed over to this user at startup |
+
+Boolean variables accept `true`/`false`, `1`/`0`, `yes`/`no` and `on`/`off` (case-insensitive).
+
+The container drops root privileges at startup. Alternatively you can start it directly as an unprivileged user with `user: "1000:1000"` in `docker-compose.yaml`; then the mounted `data` and `sentences` folders must be writable for that user.
+
+## Healthcheck
+The image has a built-in healthcheck that checks whether port `10300` accepts connections. `docker ps` shows the container as `healthy` once the model is loaded.
 
 # Using it in Home Assistant
 * Settings->Integrations->Add Integration: Add the wyoming protocol and add the IP of wherever you are running `Wyoming Vosk Standalone`. The port is `10300`.
@@ -31,14 +55,23 @@ cd vosk/models
 wget https://alphacephei.com/vosk/models/vosk-model-de-0.21.zip
 ````
 * Unzip
-````unzip vosk-model-de-0.21.zip````
+````
+unzip vosk-model-de-0.21.zip
+````
 * vosk uses the foldername to determine the language:
 ````
 mv vosk-model-de-0.21 de
 ````
 * optional: delete the zip:
 ````
-rm unzip vosk-model-de-0.21.zip
+rm vosk-model-de-0.21.zip
 ````
+
+# Building locally
+````
+docker build -t wyoming-vosk-standalone .
+````
+The wyoming-vosk version can be changed with `--build-arg WYOMING_VOSK_VERSION=<version>`.
+
 # Note
 Pull requests and ideas/feature requests are always welcome!

@@ -1,13 +1,15 @@
 services:
   vosk:
-    image: ghcr.io/frauhottelmann/wyoming-vosk-standalone:1.5.0
-    container_name: vosk
+    image: ghcr.io/frauhottelmann/wyoming-vosk-standalone:1
     environment:
       - CORRECT_SENTENCES=0.0
       - PRELOAD_LANGUAGE=en
-      - DEBUG_LOGGING=TRUE
-      - LIMIT_SENTENCES=TRUE
-      - ALLOW_UNKNOWN=False
+      - DEBUG_LOGGING=true
+      - LIMIT_SENTENCES=true
+      - ALLOW_UNKNOWN=false
+      # User/group that owns ./vosk/data and ./vosk/sentences
+      - PUID=1000
+      - PGID=1000
     volumes:
       - ./vosk/data:/data
       - ./vosk/sentences:/share/vosk/sentences
